@@ -1,17 +1,21 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Student;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import javax.servlet.ServletContext;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -65,5 +69,34 @@ public class StudentControllerTest {
                 .andExpect(jsonPath("$.name").value("Peter"))
                 .andExpect(jsonPath("$.score", equalTo(45.3)))
                 .andExpect(jsonPath("$.graduate", equalTo(false)));
+    }
+
+    @Test
+    public void update_putWithIdStudent_updateStudentValue() throws Exception {
+        Student updatedStudent = new Student();
+        updatedStudent.setName("Alex");
+        updatedStudent.setScore(60.0);
+        updatedStudent.setGraduate(true);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonString = objectMapper.writeValueAsString(updatedStudent);
+
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put("/students/11")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonString);
+
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().is(200));
+    }
+
+    @Test
+    public void delete_givenIdExist_deleteStudent() throws Exception{
+        RequestBuilder requestBuilder = MockMvcRequestBuilders
+                .delete("/students/1");
+
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().is(204));
     }
 }
